@@ -29,7 +29,6 @@ class ServerSyncProcessHandler {
     }
 
     private let instanceId: String
-    private let sendMessageQueue: DispatchQueue
     private let handleMessageQueue: DispatchQueue
     private let networkService: NetworkService
     private let getTokenProvider: () -> TokenProvider?
@@ -42,7 +41,6 @@ class ServerSyncProcessHandler {
         self.deviceStateStore = InstanceDeviceStateStore(instanceId)
         self.getTokenProvider = getTokenProvider
         self.handleServerSyncEvent = handleServerSyncEvent
-        self.sendMessageQueue = DispatchQueue(label: "com.pusher.beams.sendMessageQueue")
         self.handleMessageQueue = DispatchQueue(label: "com.pusher.beams.handleMessageQueue")
         let session = URLSession(configuration: .ephemeral)
         self.networkService = NetworkService(session: session)
@@ -64,12 +62,10 @@ class ServerSyncProcessHandler {
     }
 
     func sendMessage(serverSyncJob: ServerSyncJob) {
-        self.sendMessageQueue.async {
-            self.jobQueue.append(serverSyncJob)
+        self.jobQueue.append(serverSyncJob)
 
-            self.handleMessageQueue.async {
-                self.handleMessage(serverSyncJob: serverSyncJob)
-            }
+        self.handleMessageQueue.async {
+            self.handleMessage(serverSyncJob: serverSyncJob)
         }
     }
 
